@@ -1,5 +1,7 @@
 <?php
 namespace BromineMai\SwooleImpale\Util;
+use BromineMai\SwooleImpale\Config\EofPackConfig;
+use BromineMai\SwooleImpale\Config\LenghtPackConfig;
 use BromineMai\SwooleImpale\Config\PackConfig;
 
 /**
@@ -10,7 +12,7 @@ use BromineMai\SwooleImpale\Config\PackConfig;
 class Packer{
     
     private static $instanceArr=[];
-    /** @var  PackConfig */
+    /** @var  LenghtPackConfig */
     private $packConfig;
 
     /**
@@ -24,13 +26,14 @@ class Packer{
         if(!isset(self::$instanceArr[$packerName])){
             if(empty($config)){
                 $config=require CONF_DIR.'pack.php';
-                $obj=new self();
-                if(empty($config['packConfig']) || !$config['packConfig'] instanceof PackConfig ){
-                    throw new \Exception('packConfig配置缺失');
-                }
-                $obj->packConfig=$config['packConfig'];
-                self::$instanceArr[$packerName]=$obj;
+                $config=$config['packConfig']??null;
             }
+            $obj=new self();
+            if(empty($config) || !$config instanceof PackConfig ){
+                throw new \Exception('packConfig配置缺失');
+            }
+            $obj->packConfig=$config;
+            self::$instanceArr[$packerName]=$obj;
         }
         return self::$instanceArr[$packerName];
     }
@@ -42,10 +45,21 @@ class Packer{
      * @author Jiankang maijiankang@foxmail.com
      */
     public function pack($strData){
+        
         if(!is_string($strData)){
             $strData=(string)$strData;
         }
-        return  pack($this->packConfig->packageLengthType, strlen($strData)) . $strData;
+        $packConfig=$this->packConfig;
+        switch (get_class($packConfig)){
+            case LenghtPackConfig::class:
+                /** @var  LenghtPackConfig $packConfig */
+                return  pack($packConfig->packageLengthType, strlen($strData)) . $strData;
+            case EofPackConfig::class:
+                /** @var  EofPackConfig $packConfig */
+                return $strData.$packConfig->packageEof;
+            default:
+                return $strData; 
+        }
     }
 
     /**
@@ -55,9 +69,30 @@ class Packer{
      * @author Jiankang maijiankang@foxmail.com
      */
     public function unPack($strData){
-        $info = unpack($this->packConfig->packageLengthType, $strData);
-        $len = $info[1];
-        return substr($strData, - $len);
+        $packConfig=$this->packConfig;
+        switch (get_class($packConfig)){
+            case LenghtPackConfig::class:
+                /** @var  LenghtPackConfig $packConfig */
+                $info = unpack($packConfig->packageLengthType, $strData);
+                $len = $info[1];
+                return substr($strData, - $len);
+            case EofPackConfig::class:
+                /** @var  EofPackConfig $packConfig */
+                $len=strlen($strData)-strlen($packConfig->packageEof);
+                return substr($strData, 0,$len);
+            default:
+                return $strData;
+        }
+    }
+    
+    
+    public function getHeadLen(){
+        return $this->packConfig->packageBodyOffset;
+    }
+    
+    public function getDataLenght($strHead){
+        $info = unpack($this->packConfig->packageLengthType, $strHead);
+        return  $info[1];
     }
     
 }

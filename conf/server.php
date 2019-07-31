@@ -1,12 +1,12 @@
 <?php
 return [
   'tcpConfig'=>new \BromineMai\SwooleImpale\Config\TcpListenConfig([
-      'ip'=>'127.0.0.1',
+      'ip'=>'0.0.0.0',
       'port'=>'9501'
   ]),
     'webListenConfig'=>new \BromineMai\SwooleImpale\Config\WebListenConfig([
         'ip'=>'0.0.0.0',
-        'port'=>'84'
+        'port'=>'999'
     ]),
     
     'domainTableConfig'=>new \BromineMai\SwooleImpale\Config\DomainTableConfig([
@@ -14,5 +14,4 @@ return [
         'domainLong'=>64,
         'domainCount'=>1024, 
     ]),
-  
 ];

@@ -9,6 +9,7 @@ class Msg{
     CONST MSG_TYPE_REGISTER='reg';//注册
     CONST MSG_TYPE_REGISTER_RESULT='regrst';//注册结果
     CONST MSG_TYPE_HTTP_REQUEST='httpReq';//http请求
+    CONST MSG_TYPE_HTTP_RESPOENSE='httpRes';//http结果
     
     
     const TYPE_CLASS_MAP=[
@@ -20,6 +21,7 @@ class Msg{
 
 
     public $type;
+    public $ver=1.0;
     
     /**
      * 反序列化
