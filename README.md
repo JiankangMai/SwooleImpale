@@ -1,8 +1,6 @@
 # SwooleImpale
 使用Swoole实现内网穿透
 
-#依赖
-
 #使用方式
 
 1. `composer install` 安装vendor目录
